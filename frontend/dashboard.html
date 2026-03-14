@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div style="padding: 20px;">
+        <h1 id="dashboardTitle">Dashboard</h1>
+        <p id="userName">Welcome</p>
+        <button id="logoutBtn" style="background: #dc3545; color: white; padding: 10px; border: none; border-radius: 4px; cursor: pointer;">Logout</button>
+    </div>
+    
+    <script src="js/auth-frontend.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const userRole = urlParams.get('role');
+            const userData = localStorage.getItem('currentUser');
+            
+            if (!userData || !userRole) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            const user = JSON.parse(userData);
+            
+            if (user.role !== userRole) {
+                logout();
+                return;
+            }
+
+            document.getElementById('userName').textContent = 'Welcome, ' + user.name;
+            
+            if (user.role === 'patient') {
+                document.getElementById('dashboardTitle').textContent = 'Patient Dashboard';
+            } else if (user.role === 'doctor') {
+                document.getElementById('dashboardTitle').textContent = 'Doctor Dashboard';
+            }
+            
+            document.getElementById('logoutBtn').addEventListener('click', logout);
+        });
+    </script>
+</body>
+</html>
