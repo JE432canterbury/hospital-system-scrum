@@ -7,40 +7,170 @@
     <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
-    <div style="padding: 20px;">
-        <h1 id="dashboardTitle">Dashboard</h1>
-        <p id="userName">Welcome</p>
-        <button id="logoutBtn" style="background: #dc3545; color: white; padding: 10px; border: none; border-radius: 4px; cursor: pointer;">Logout</button>
-    </div>
+    <header class="dashboard-header">
+        <div class="header-content">
+            <div class="header-left">
+                <h1 id="dashboardTitle" class="dashboard-title">Dashboard</h1>
+                <p id="userName" class="welcome-message">Welcome</p>
+            </div>
+            <div class="header-right">
+                <button id="logoutBtn" class="logout-btn btn btn-secondary">Logout</button>
+            </div>
+        </div>
+    </header>
+    
+    <main class="dashboard-main">
+        <div class="dashboard-content">
+            <!-- Patient-specific features -->
+            <div id="patientFeatures" class="role-section">
+                <h2 class="role-title">Patient Features</h2>
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon">📋</div>
+                        <div class="feature-content">
+                            <h3 class="feature-title">My Medical Records</h3>
+                            <p class="feature-description">View your medical history and test results</p>
+                            <button class="btn">View Records</button>
+                        </div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">📅</div>
+                        <div class="feature-content">
+                            <h3 class="feature-title">Book Appointment</h3>
+                            <p class="feature-description">Schedule an appointment with your doctor</p>
+                            <button class="btn book">Book Now</button>
+                        </div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">💊</div>
+                        <div class="feature-content">
+                            <h3 class="feature-title">My Prescriptions</h3>
+                            <p class="feature-description">View current and past prescriptions</p>
+                            <button class="btn prescription">View Prescriptions</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Doctor-specific features -->
+            <div id="doctorFeatures" class="role-section">
+                <h2 class="role-title">Doctor Features</h2>
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon">👥</div>
+                        <div class="feature-content">
+                            <h3 class="feature-title">My Patients</h3>
+                            <p class="feature-description">View and manage your patient list</p>
+                            <button class="btn">View Patients</button>
+                        </div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">📅</div>
+                        <div class="feature-content">
+                            <h3 class="feature-title">Today's Appointments</h3>
+                            <p class="feature-description">View your scheduled appointments</p>
+                            <button class="btn schedule">View Schedule</button>
+                        </div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">📝</div>
+                        <div class="feature-content">
+                            <h3 class="feature-title">Medical Records</h3>
+                            <p class="feature-description">Add and update patient medical records</p>
+                            <button class="btn">Manage Records</button>
+                        </div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">💊</div>
+                        <div class="feature-content">
+                            <h3 class="feature-title">Prescriptions</h3>
+                            <p class="feature-description">Issue and manage prescriptions</p>
+                            <button class="btn prescription">Manage Prescriptions</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
     
     <script src="js/auth-frontend.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const userRole = urlParams.get('role');
             const userData = localStorage.getItem('currentUser');
             
-            if (!userData || !userRole) {
+            // Check if user is logged in
+            if (!userData) {
                 window.location.href = 'login.html';
                 return;
             }
 
             const user = JSON.parse(userData);
             
-            if (user.role !== userRole) {
+            // System checks role on login 
+            if (!user.role) {
+                console.error('No role found in user data');
                 logout();
                 return;
             }
 
+            // Set basic user info
             document.getElementById('userName').textContent = 'Welcome, ' + user.name;
             
-            if (user.role === 'patient') {
-                document.getElementById('dashboardTitle').textContent = 'Patient Dashboard';
-            } else if (user.role === 'doctor') {
-                document.getElementById('dashboardTitle').textContent = 'Doctor Dashboard';
-            }
+            // Show role-specific features
+            showRoleBasedInterface(user.role);
             
-            document.getElementById('logoutBtn').addEventListener('click', logout);
+            console.log('Dashboard loaded successfully for role:', user.role);
+        });
+        
+        function showRoleBasedInterface(role) {
+            console.log('Showing interface for role:', role);
+            
+            if (role === 'patient') {
+                // Patients only see patient related features
+                document.getElementById('dashboardTitle').textContent = 'Patient Dashboard';
+                document.getElementById('patientFeatures').style.display = 'block';
+                document.getElementById('doctorFeatures').style.display = 'none';
+                
+                console.log('Patient interface loaded - showing medical records, appointments, prescriptions');
+                
+            } else if (role === 'doctor') {
+                // Doctors only see doctor related features
+                document.getElementById('dashboardTitle').textContent = 'Doctor Dashboard';
+                document.getElementById('patientFeatures').style.display = 'none';
+                document.getElementById('doctorFeatures').style.display = 'block';
+                
+                console.log('Doctor interface loaded - showing patients, appointments, records, prescriptions');
+                
+            } else {
+                console.error('Unknown role:', role);
+                logout();
+            }
+        }
+        
+        // Logout function
+        function logout() {
+            localStorage.removeItem('currentUser');
+            window.location.href = 'login.html';
+        }
+        
+        document.getElementById('logoutBtn').addEventListener('click', logout);
+        
+        // Add event listeners for feature buttons (demonstration only)
+        document.addEventListener('click', function(e) {
+            if (
+                e.target.tagName === 'BUTTON' &&
+                (
+                    e.target.textContent.includes('View') ||
+                    e.target.textContent.includes('Book') ||
+                    e.target.textContent.includes('Manage')
+                )
+            ) {
+                e.preventDefault();
+                const featureName = e.target.textContent;
+                const userRole = JSON.parse(localStorage.getItem('currentUser')).role;
+                
+                alert(`${featureName} - This feature is available for ${userRole}s only.\n\nThis demonstrates role-based access control.`);
+            }
         });
     </script>
 </body>
