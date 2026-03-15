@@ -152,12 +152,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 name: user.name
             }));
 
-            // Redirect to dashboard depedning on the role. 2 different dashboards for patient and doctor.
-            if (user.role === 'patient') {
-                window.location.href = 'dashboard.html?role=patient';
-            } else if (user.role === 'doctor') {
-                window.location.href = 'dashboard.html?role=doctor';
-            }
+            // Redirect to dashboard without role parameter
+            window.location.href = 'dashboard.html';
         });
     }
 
@@ -238,17 +234,14 @@ document.addEventListener('DOMContentLoaded', function() {
         const userData = localStorage.getItem('currentUser');
         
         if (userData) {
-            const user = JSON.parse(userData);
-            if (user.role === 'patient') {
-                window.location.href = 'dashboard.html?role=patient';
-            } else if (user.role === 'doctor') {
-                window.location.href = 'dashboard.html?role=doctor';
-            }
+            window.location.href = 'dashboard.html';
         }
     }
 
-    // Run login check on page load
-    checkLogin();
+    // Run login check on page load (but not on dashboard)
+    if (!window.location.pathname.includes('dashboard.html')) {
+        checkLogin();
+    }
 });
 
 // Logout function
