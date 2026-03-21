@@ -1,4 +1,4 @@
-// HospitalDB Medical Portal Authentication System. Replaced Mock database with real supabase database integrations.
+// HospitalDB Medical Portal Authentication System
 import { supabase, dbHelpers, TABLES } from './supabaseClient.js';
 
 const hospitalAuth = {
@@ -46,7 +46,7 @@ const hospitalAuth = {
             };
 
             localStorage.setItem('currentUser', JSON.stringify(sessionData));
-            window.location.href = "/frontend/dashboard.html";
+            window.location.href = "dashboard.html";
             
             return { success: true, user: sessionData };
 
@@ -414,7 +414,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (result.success) {
                     showSuccess(result.message);
                     setTimeout(() => {
-                        window.location.href = '/frontend/login.html';
+                        window.location.href = 'login.html';
                     }, 2000);
                 } else {
                     showError(result.error);
