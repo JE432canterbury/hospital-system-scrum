@@ -93,58 +93,168 @@
         </div>
     </main>
     
-    <script src="js/auth-frontend.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const userData = localStorage.getItem('currentUser');
+    <script type="module" src="js/auth-frontend.js"></script>
+    <script type="module">
+        import { hospitalAuth } from './js/auth-frontend.js';
+        import { dashboardService } from './js/dashboard-service.js';
+        
+        document.addEventListener('DOMContentLoaded', async function() {
+            console.log('Dashboard page loaded');
             
-            // Check if user is logged in
-            if (!userData) {
+            // Add small delay to ensure localStorage is ready
+            await new Promise(resolve => setTimeout(resolve, 100));
+            
+            // Check if user is logged in using Supabase Auth
+            const currentUser = await hospitalAuth.getCurrentUser();
+            
+            console.log('Current user check result:', currentUser);
+            
+            if (!currentUser || !currentUser.authenticated) {
+                console.log('No authenticated user found, redirecting to login');
                 window.location.href = 'login.html';
                 return;
             }
 
-            const user = JSON.parse(userData);
-            
             // System checks role on login 
-            if (!user.role) {
-                console.error('No role found in user data');
-                logout();
+            if (!currentUser.role) {
+                console.error('No role found in user data:', currentUser);
+                await logout();
                 return;
             }
 
+            console.log('User authenticated with role:', currentUser.role);
+            
             // Set basic user info
-            document.getElementById('userName').textContent = 'Welcome, ' + user.name;
+            document.getElementById('userName').textContent = 'Welcome, ' + currentUser.name;
             
-            // Show role-specific features
-            showRoleBasedInterface(user.role);
+            // Show role-specific features and load real data
+            await showRoleBasedInterface(currentUser.role, currentUser.userId, currentUser.patientId);
             
-            console.log('Dashboard loaded successfully for role:', user.role);
+            console.log('Dashboard loaded successfully for role:', currentUser.role);
         });
         
-        function showRoleBasedInterface(role) {
+        async function showRoleBasedInterface(role, userId, patientId) {
             console.log('Showing interface for role:', role);
             
-            if (role === 'patient') {
+            if (role === 'Patient' || role === 'patient') {
                 // Patients only see patient related features
                 document.getElementById('dashboardTitle').textContent = 'Patient Dashboard';
                 document.getElementById('patientFeatures').style.display = 'block';
                 document.getElementById('doctorFeatures').style.display = 'none';
                 
-                console.log('Patient interface loaded - showing medical records, appointments, prescriptions');
+                // Load real patient data from database
+                await loadPatientDashboard(userId);
                 
-            } else if (role === 'doctor') {
+            } else if (role === 'Doctor' || role === 'doctor') {
                 // Doctors only see doctor related features
                 document.getElementById('dashboardTitle').textContent = 'Doctor Dashboard';
                 document.getElementById('patientFeatures').style.display = 'none';
                 document.getElementById('doctorFeatures').style.display = 'block';
                 
-                console.log('Doctor interface loaded - showing patients, appointments, records, prescriptions');
+                // Load real doctor data from database
+                await loadDoctorDashboard(patientId);
                 
             } else {
                 console.error('Unknown role:', role);
                 logout();
             }
+        }
+        
+        async function loadPatientDashboard(userId) {
+            try {
+                console.log('Loading patient dashboard data...');
+                
+                const data = await dashboardService.getPatientDashboardData(userId);
+                
+                if (data.error) {
+                    console.error('Error loading patient data:', data.error);
+                    showErrorMessage('Failed to load dashboard data');
+                    return;
+                }
+
+                console.log('Patient data loaded:', {
+                    appointments: data.appointments?.length || 0,
+                    medicalRecords: data.medicalRecords?.length || 0,
+                    prescriptions: data.prescriptions?.length || 0
+                });
+
+                // Update appointment button with count
+                const appointmentBtn = document.querySelector('.feature-btn.book');
+                if (data.appointments && data.appointments.length > 0) {
+                    appointmentBtn.textContent = `View Appointments (${data.appointments.length})`;
+                }
+
+                // Store data for feature buttons
+                window.patientData = data;
+                
+            } catch (error) {
+                console.error('Error in loadPatientDashboard:', error);
+                showErrorMessage('Failed to load patient dashboard');
+            }
+        }
+        
+        async function loadDoctorDashboard(userId) {
+            try {
+                console.log('Loading doctor dashboard data...');
+                
+                const data = await dashboardService.getDoctorDashboardData(userId);
+                
+                if (data.error) {
+                    console.error('Error loading doctor data:', data.error);
+                    showErrorMessage('Failed to load dashboard data');
+                    return;
+                }
+
+                console.log('Doctor data loaded:', {
+                    patients: data.patients?.length || 0,
+                    appointments: data.appointments?.length || 0,
+                    todayAppointments: data.todayAppointments?.length || 0
+                });
+
+                // Update buttons with counts
+                const patientsBtn = document.querySelector('#doctorFeatures .feature-btn');
+                if (data.patients && data.patients.length > 0) {
+                    patientsBtn.textContent = `View Patients (${data.patients.length})`;
+                }
+
+                const scheduleBtn = document.querySelector('.feature-btn.schedule');
+                if (data.todayAppointments && data.todayAppointments.length > 0) {
+                    scheduleBtn.textContent = `Today's Schedule (${data.todayAppointments.length})`;
+                }
+
+                // Store data for feature buttons
+                window.doctorData = data;
+                
+            } catch (error) {
+                console.error('Error in loadDoctorDashboard:', error);
+                showErrorMessage('Failed to load doctor dashboard');
+            }
+        }
+        
+        function showErrorMessage(message) {
+            // Create error message element if it doesn't exist
+            let errorDiv = document.getElementById('dashboardError');
+            if (!errorDiv) {
+                errorDiv = document.createElement('div');
+                errorDiv.id = 'dashboardError';
+                errorDiv.style.cssText = `
+                    background: #fee;
+                    color: #c33;
+                    padding: 1rem;
+                    border-radius: 8px;
+                    margin: 1rem 0;
+                    border: 1px solid #fcc;
+                    text-align: center;
+                `;
+                document.querySelector('.dashboard-content').prepend(errorDiv);
+            }
+            
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            
+            setTimeout(() => {
+                errorDiv.style.display = 'none';
+            }, 5000);
         }
         
         // Logout function
@@ -153,7 +263,9 @@
             window.location.href = 'login.html';
         }
         
-        document.getElementById('logoutBtn').addEventListener('click', logout);
+        document.getElementById('logoutBtn').addEventListener('click', async function() {
+            await logout();
+        });
         
         // Add event listeners for feature buttons (demonstration only)
         document.addEventListener('click', function(e) {
