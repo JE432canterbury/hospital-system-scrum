@@ -6,6 +6,8 @@
     <title>Book Appointment - Hospital Portal</title>
     <link rel="stylesheet" href="css/styles.css">
     <link rel="stylesheet" href="css/booking.css">
+    <link rel="stylesheet" href="css/appointments.css">
+    <link rel="stylesheet" href="css/calendar.css">
 </head>
 <body>
     <header class="header">
@@ -49,7 +51,9 @@
                     <h3>Step 2: Select Date</h3>
                     <div class="form-group">
                         <label for="appointmentDate">Appointment Date:</label>
-                        <input type="date" id="appointmentDate" class="form-control" required>
+                        <div id="calendar-container">
+                            <div id="calendar"></div>
+                        </div>
                     </div>
                     <div class="step-buttons">
                         <button class="btn btn-secondary" onclick="previousStep(1)">Back</button>
@@ -97,5 +101,6 @@
     </footer>
 
     <script type="module" src="js/appointment-booking.js"></script>
+    <script type="module" src="js/calendar-component.js"></script>
 </body>
 </html>
