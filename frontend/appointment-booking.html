@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Appointment - Hospital Portal</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/booking.css">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <h1 class="logo">Hospital Portal</h1>
+            <nav class="nav">
+                <a href="dashboard.html">Dashboard</a>
+                <a href="appointment-booking.html">Book Appointment</a>
+                <a href="#" onclick="logout()">Logout</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="container">
+            <div class="booking-container">
+                <h2 class="page-title">Book Appointment</h2>
+                
+                <!-- Progress Indicator -->
+                <div class="progress-bar">
+                    <div class="progress-step active" id="step1">1</div>
+                    <div class="progress-step" id="step2">2</div>
+                    <div class="progress-step" id="step3">3</div>
+                    <div class="progress-step" id="step4">4</div>
+                </div>
+
+                <!-- Step 1: Doctor Selection -->
+                <div class="booking-step active" id="step1Content">
+                    <h3>Step 1: Select Doctor</h3>
+                    <div class="form-group">
+                        <label for="doctorSelect">Choose a Doctor:</label>
+                        <select id="doctorSelect" class="form-control" required>
+                            <option value="">-- Select Doctor --</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-primary" onclick="nextStep(2)">Next</button>
+                </div>
+
+                <!-- Step 2: Date Selection -->
+                <div class="booking-step" id="step2Content">
+                    <h3>Step 2: Select Date</h3>
+                    <div class="form-group">
+                        <label for="appointmentDate">Appointment Date:</label>
+                        <input type="date" id="appointmentDate" class="form-control" required>
+                    </div>
+                    <div class="step-buttons">
+                        <button class="btn btn-secondary" onclick="previousStep(1)">Back</button>
+                        <button class="btn btn-primary" onclick="nextStep(3)">Next</button>
+                    </div>
+                </div>
+
+                <!-- Step 3: Time Slot Selection -->
+                <div class="booking-step" id="step3Content">
+                    <h3>Step 3: Available Time Slots</h3>
+                    <div id="timeSlots" class="time-slots-grid">
+                        <!-- Time slots will be populated dynamically -->
+                    </div>
+                    <div class="step-buttons">
+                        <button class="btn btn-secondary" onclick="previousStep(2)">Back</button>
+                        <button class="btn btn-primary" onclick="nextStep(4)" id="step3Next" disabled>Next</button>
+                    </div>
+                </div>
+
+                <!-- Step 4: Appointment Type & Confirmation -->
+                <div class="booking-step" id="step4Content">
+                    <h3>Step 4: Appointment Type & Confirmation</h3>
+                    <div class="form-group">
+                        <label for="appointmentType">Appointment Type:</label>
+                        <select id="appointmentType" class="form-control" required>
+                            <option value="">-- Select Type --</option>
+                        </select>
+                    </div>
+                    <div class="confirmation-summary" id="confirmationSummary">
+                        <h4>Appointment Summary</h4>
+                        <div id="summaryContent"></div>
+                    </div>
+                    <div class="step-buttons">
+                        <button class="btn btn-secondary" onclick="previousStep(3)">Back</button>
+                        <button class="btn btn-success" onclick="bookAppointment()" id="bookButton" disabled>Book Appointment</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+        </div>
+    </footer>
+
+    <script type="module" src="js/appointment-booking.js"></script>
+</body>
+</html>

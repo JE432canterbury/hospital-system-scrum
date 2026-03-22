@@ -1,5 +1,5 @@
 // Single Shared Supabase Client
-// Supabase database Medical Portal Integration
+// HospitalDB Medical Portal Integration
 
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
@@ -139,8 +139,8 @@ export const dbHelpers = {
             .from(TABLES.APPOINTMENT)
             .select(`
                 *,
-                appointmentStatus:appointmentStatus(status),
-                appointmentType:appointmentType(type)
+                appointmentStatus:appointmentstatus(status),
+                appointmentType:appointmenttype(type)
             `)
             .eq('patientID', patientId)
             .order('appointmentDate', { ascending: true });
@@ -154,13 +154,11 @@ export const dbHelpers = {
             .from(TABLES.APPOINTMENT)
             .select(`
                 *,
-                appointmentStatus:appointmentStatus(status),
-                appointmentType:appointmentType(type),
-                patient:patient(firstName, lastName),
-                doctor:doctor(firstName, lastName)
+                appointmentStatus:appointmentstatus(status),
+                appointmentType:appointmenttype(type)
             `)
             .eq('doctorID', doctorId)
-            .order('appointmentDate', 'startTime');
+            .order('appointmentDate', { ascending: true });
         
         return { data, error };
     },
@@ -169,13 +167,9 @@ export const dbHelpers = {
     async getPatientMedicalRecords(patientId) {
         const { data, error } = await supabase
             .from(TABLES.MEDICAL_RECORD)
-            .select(`
-                *,
-                patient:patient(firstName, lastName),
-                doctor:doctor(firstName, lastName)
-            `)
+            .select('*')
             .eq('patientID', patientId)
-            .order('recordDate', 'desc');
+            .order('recordDate', { ascending: false });
         
         return { data, error };
     },
@@ -199,13 +193,9 @@ export const dbHelpers = {
     async getPatientPrescriptions(patientId) {
         const { data, error } = await supabase
             .from(TABLES.PRESCRIPTION)
-            .select(`
-                *,
-                patient:patient(firstName, lastName),
-                doctor:doctor(firstName, lastName)
-            `)
+            .select('*')
             .eq('patientID', patientId)
-            .order('issueDate', 'desc');
+            .order('issueDate', { ascending: false });
         
         return { data, error };
     },
@@ -223,5 +213,138 @@ export const dbHelpers = {
             .order('issueDate', 'desc');
         
         return { data, error };
+    },
+
+    // Get available doctors for appointment booking
+    async getAvailableDoctors() {
+        const { data, error } = await supabase
+            .from(TABLES.DOCTOR)
+            .select(`
+                doctorID,
+                firstName,
+                lastName,
+                doctorSpecialityID
+            `);
+        
+        return { data, error };
+    },
+
+    // Get doctor specialities
+    async getDoctorSpecialities() {
+        const { data, error } = await supabase
+            .from(TABLES.DOCTOR_SPECIALITY)
+            .select('*');
+        
+        return { data, error };
+    },
+
+    // Get doctor availability for specific date
+    async getDoctorAvailability(doctorID, date) {
+        const { data, error } = await supabase
+            .from(TABLES.DOCTOR_AVAILABILITY)
+            .select('*')
+            .eq('doctorID', doctorID)
+            .eq('dateAvailable', date);
+        
+        return { data, error };
+    },
+
+    // Get appointment types
+    async getAppointmentTypes() {
+        const { data, error } = await supabase
+            .from(TABLES.APPOINTMENT_TYPE)
+            .select('*');
+        
+        return { data, error };
+    },
+
+    // Check if time slot is available
+    async checkTimeSlotAvailability(doctorID, date, time) {
+        // Check existing appointments
+        const { data: appointments, error } = await supabase
+            .from(TABLES.APPOINTMENT)
+            .select('startTime, endTime')
+            .eq('doctorID', doctorID)
+            .eq('appointmentDate', date)
+            .in('appointmentStatusID', [1, 2]); // scheduled or confirmed
+        
+        if (error) return { available: false, error };
+        
+        // Check if time slot conflicts with existing appointments
+        const bookedTimes = appointments.map(apt => `${apt.startTime}-${apt.endTime}`);
+        const isBooked = bookedTimes.some(booked => 
+            (time >= booked.split('-')[0] && time < booked.split('-')[1]) ||
+            (time > booked.split('-')[0] && time <= booked.split('-')[1])
+        );
+        
+        return { available: !isBooked, appointments };
+    },
+
+    // Create new appointment
+    async createAppointment(appointmentData) {
+        const { data, error } = await supabase
+            .from(TABLES.APPOINTMENT)
+            .insert(appointmentData)
+            .select()
+            .single();
+        
+        return { data, error };
+    },
+
+    // Cancel appointment
+    async cancelAppointment(appointmentID) {
+        const { data, error } = await supabase
+            .from(TABLES.APPOINTMENT)
+            .update({ appointmentStatusID: 3 }) // 'cancelled'
+            .eq('appointmentID', appointmentID)
+            .select();
+        
+        return { data, error };
+    },
+
+    // Delete appointment completely
+    async deleteAppointment(appointmentID) {
+        const { data, error } = await supabase
+            .from(TABLES.APPOINTMENT)
+            .delete()
+            .eq('appointmentID', appointmentID);
+        
+        return { data, error };
+    },
+
+    // Reschedule appointment
+    async rescheduleAppointment(appointmentID, newDateTime) {
+        // Update existing appointment instead of creating new one
+        const { data: oldAppointment, error: fetchError } = await supabase
+            .from(TABLES.APPOINTMENT)
+            .select('*')
+            .eq('appointmentID', appointmentID)
+            .single();
+        
+        if (fetchError || !oldAppointment) return { data: null, error: 'Appointment not found' };
+        
+        // Update the existing appointment with new date/time
+        const updateData = {
+            appointmentDate: newDateTime.split('T')[0],
+            startTime: newDateTime.split('T')[1],
+            endTime: calculateEndTime(newDateTime.split('T')[1], 1),
+            appointmentStatusID: 1 // 'scheduled'
+        };
+        
+        const { data, error } = await supabase
+            .from(TABLES.APPOINTMENT)
+            .update(updateData)
+            .eq('appointmentID', appointmentID)
+            .select()
+            .single();
+        
+        return { data, error };
     }
 };
+
+// Add calculateEndTime helper function
+function calculateEndTime(startTime, durationHours = 1) {
+    const [hours, minutes] = startTime.split(':').map(Number);
+    const endHours = hours + durationHours;
+    return `${endHours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+}
