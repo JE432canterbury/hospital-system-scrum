@@ -15,14 +15,9 @@
                     <label for="role">I am a:</label>
                     <select id="role" name="role" required>
                         <option value="">Select Role</option>
-                        <option value="patient">Patient</option>
-                        <option value="doctor">Doctor</option>
+                        <option value="Patient">Patient</option>
+                        <option value="Doctor">Doctor</option>
                     </select>
-                </div>
-                
-                <div class="form-group">
-                    <label for="name">Full Name:</label>
-                    <input type="text" id="name" name="name" required placeholder="Enter your full name">
                 </div>
                 
                 <div class="form-group">
@@ -50,6 +45,83 @@
                     </div>
                 </div>
                 
+                <!-- Patient-specific fields -->
+                <div id="patientFields" style="display: none;">
+                    <div class="form-group">
+                        <label for="firstName">First Name:</label>
+                        <input type="text" id="firstName" name="firstName" placeholder="First Name">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="lastName">Last Name:</label>
+                        <input type="text" id="lastName" name="lastName" placeholder="Last Name">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="dateOfBirth">Date of Birth:</label>
+                        <input type="date" id="dateOfBirth" name="dateOfBirth">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="phoneNumber">Phone Number:</label>
+                        <input type="tel" id="phoneNumber" name="phoneNumber" placeholder="Phone Number">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="addressLine1">Address Line 1:</label>
+                        <input type="text" id="addressLine1" name="addressLine1" placeholder="Address Line 1">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="addressLine2">Address Line 2:</label>
+                        <input type="text" id="addressLine2" name="addressLine2" placeholder="Address Line 2 (Optional)">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="townCity">Town/City:</label>
+                        <input type="text" id="townCity" name="townCity" placeholder="Town/City">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="postcode">Postcode:</label>
+                        <input type="text" id="postcode" name="postcode" placeholder="Postcode">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="nhsNumber">NHS Number:</label>
+                        <input type="text" id="nhsNumber" name="nhsNumber" placeholder="NHS Number">
+                    </div>
+                </div>
+                
+                <!-- Doctor-specific fields -->
+                <div id="doctorFields" style="display: none;">
+                    <div class="form-group">
+                        <label for="doctorFirstName">First Name:</label>
+                        <input type="text" id="doctorFirstName" name="firstName" placeholder="First Name">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="doctorLastName">Last Name:</label>
+                        <input type="text" id="doctorLastName" name="lastName" placeholder="Last Name">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="doctorPhoneNumber">Phone Number:</label>
+                        <input type="tel" id="doctorPhoneNumber" name="phoneNumber" placeholder="Phone Number">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="doctorSpecialityID">Speciality:</label>
+                        <select id="doctorSpecialityID" name="doctorSpecialityID">
+                            <option value="1">General Practice</option>
+                            <option value="2">Cardiology</option>
+                            <option value="3">Dermatology</option>
+                            <option value="4">Neurology</option>
+                            <option value="5">Orthopedics</option>
+                        </select>
+                    </div>
+                </div>
+                
                 <button type="submit" class="login-btn">Sign Up</button>
                 
                 <div id="errorMessage" class="error-message" style="display: none;"></div>
@@ -62,6 +134,25 @@
         </div>
     </div>
     
-    <script src="js/auth-frontend.js"></script>
+    <script type="module" src="js/auth-frontend.js"></script>
+    <script>
+        // Show/hide role-specific fields based on selection
+        document.getElementById('role').addEventListener('change', function() {
+            const role = this.value;
+            const patientFields = document.getElementById('patientFields');
+            const doctorFields = document.getElementById('doctorFields');
+            
+            // Hide all role-specific fields first
+            patientFields.style.display = 'none';
+            doctorFields.style.display = 'none';
+            
+            // Show relevant fields based on role
+            if (role === 'Patient') {
+                patientFields.style.display = 'block';
+            } else if (role === 'Doctor') {
+                doctorFields.style.display = 'block';
+            }
+        });
+    </script>
 </body>
 </html>

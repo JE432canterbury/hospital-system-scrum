@@ -1,5 +1,8 @@
-drop schema if exists HospitalDB cascade;
-create schema HospitalDB;
+DROP SCHEMA IF EXISTS HospitalDB CASCADE;
+
+CREATE SCHEMA HospitalDB;
+
+SET search_path TO HospitalDB;
 
 /*
 
@@ -41,6 +44,7 @@ drop table if exists userInfo cascade;
 -- user table creation
 create table userInfo (
 "userInfoID" BIGSERIAL primary key,
+"supabaseUserId" UUID NOT NULL UNIQUE,
 "roleID" BIGINT not null references role("roleID") on delete restrict,
 "email" VARCHAR(255),
 "passwordHash" VARCHAR(255),
