@@ -28,17 +28,17 @@
                     <div class="feature-card">
                         <div class="feature-icon">📋</div>
                         <div class="feature-content">
-                            <h3 class="feature-title">My Medical Records</h3>
-                            <p class="feature-description">View your medical history and test results</p>
-                            <button class="btn">View Records</button>
+                            <h3 class="feature-title">My Appointments</h3>
+                            <p class="feature-description">View and manage your scheduled appointments</p>
+                            <button class="btn feature-btn book" onclick="window.location.href='appointment-management.html'">View Appointments</button>
                         </div>
                     </div>
                     <div class="feature-card">
                         <div class="feature-icon">📅</div>
                         <div class="feature-content">
                             <h3 class="feature-title">Book Appointment</h3>
-                            <p class="feature-description">Schedule an appointment with your doctor</p>
-                            <button class="btn book">Book Now</button>
+                            <p class="feature-description">Schedule new appointments with available doctors</p>
+                            <button class="btn" onclick="window.location.href='appointment-booking.html'">Book Appointment</button>
                         </div>
                     </div>
                     <div class="feature-card">
@@ -61,7 +61,7 @@
                         <div class="feature-content">
                             <h3 class="feature-title">My Patients</h3>
                             <p class="feature-description">View and manage your patient list</p>
-                            <button class="btn">View Patients</button>
+                            <button class="btn feature-btn">View Patients</button>
                         </div>
                     </div>
                     <div class="feature-card">
@@ -69,7 +69,7 @@
                         <div class="feature-content">
                             <h3 class="feature-title">Today's Appointments</h3>
                             <p class="feature-description">View your scheduled appointments</p>
-                            <button class="btn schedule">View Schedule</button>
+                            <button class="btn feature-btn schedule">View Schedule</button>
                         </div>
                     </div>
                     <div class="feature-card">
@@ -267,23 +267,7 @@
             await logout();
         });
         
-        // Add event listeners for feature buttons (demonstration only)
-        document.addEventListener('click', function(e) {
-            if (
-                e.target.tagName === 'BUTTON' &&
-                (
-                    e.target.textContent.includes('View') ||
-                    e.target.textContent.includes('Book') ||
-                    e.target.textContent.includes('Manage')
-                )
-            ) {
-                e.preventDefault();
-                const featureName = e.target.textContent;
-                const userRole = JSON.parse(localStorage.getItem('currentUser')).role;
-                
-                alert(`${featureName} - This feature is available for ${userRole}s only.\n\nThis demonstrates role-based access control.`);
-            }
-        });
+        // Demo role access alerts removed - features now work properly
     </script>
 </body>
 </html>
