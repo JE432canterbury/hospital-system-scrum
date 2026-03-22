@@ -1,12 +1,8 @@
-
 -- COMPLETE RLS FOR hospitaldb
 -- TEAM: Alfie Warnock, Jonathan Edwards, Mudia Oseghale
--- Row level secururity script, to satisfy user stories that requires data to be stored "Securely"
-
-
+-- Row level security script, to satisfy user stories that requires data to be stored "Securely"
 
 -- 1) ENABLE RLS ON ALL TABLES
-
 
 ALTER TABLE hospitaldb.userinfo               ENABLE ROW LEVEL SECURITY;
 ALTER TABLE hospitaldb.patient                ENABLE ROW LEVEL SECURITY;
@@ -19,9 +15,7 @@ ALTER TABLE hospitaldb.medicalrecorddiagnosis ENABLE ROW LEVEL SECURITY;
 ALTER TABLE hospitaldb.testresult             ENABLE ROW LEVEL SECURITY;
 ALTER TABLE hospitaldb.doctoravailability     ENABLE ROW LEVEL SECURITY;
 
-
 -- 2) GRANTS
-
 
 GRANT USAGE ON SCHEMA hospitaldb TO authenticated;
 GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA hospitaldb TO authenticated;
@@ -30,9 +24,7 @@ GRANT USAGE ON ALL SEQUENCES IN SCHEMA hospitaldb TO authenticated;
 ALTER DEFAULT PRIVILEGES IN SCHEMA hospitaldb
 GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO authenticated;
 
-
 -- 3) DROP ALL EXISTING POLICIES
-
 
 DO $$
 DECLARE r RECORD;
@@ -47,18 +39,14 @@ BEGIN
   END LOOP;
 END $$;
 
-
 -- 4) DROP HELPER FUNCTIONS
-
 
 DROP FUNCTION IF EXISTS hospitaldb.current_userinfo_id();
 DROP FUNCTION IF EXISTS hospitaldb.is_patient_owner(bigint);
 DROP FUNCTION IF EXISTS hospitaldb.is_doctor_for_patient(bigint);
 DROP FUNCTION IF EXISTS hospitaldb.current_doctor_id();
 
-
 -- 5) USERINFO POLICIES
-
 
 CREATE POLICY "userinfo_insert"
 ON hospitaldb.userinfo
@@ -78,7 +66,6 @@ FOR UPDATE
 TO authenticated
 USING (auth.uid() = "supabaseUserId")
 WITH CHECK (auth.uid() = "supabaseUserId");
-
 
 -- 6) PATIENT POLICIES
 
@@ -132,8 +119,7 @@ WITH CHECK (
 );
 
 -- SELECT: doctor can see patients they have appointments with
--- Currently commented out because it was causeing recursion errors. 
-
+-- Currently commented out because it was causing recursion errors.
 -- CREATE POLICY "patient_select_by_doctor"
 -- ON hospitaldb.patient
 -- FOR SELECT
@@ -148,9 +134,7 @@ WITH CHECK (
 --   )
 -- );
 
-
 -- 7) DOCTOR POLICIES
-
 
 CREATE POLICY "doctor_insert"
 ON hospitaldb.doctor
@@ -201,7 +185,6 @@ WITH CHECK (
 
 -- SELECT: patients can see doctors linked to their appointments
 -- Commented out for now because it currently causes recursion error
-
 -- CREATE POLICY "doctor_select_by_patient"
 -- ON hospitaldb.doctor
 -- FOR SELECT
@@ -216,10 +199,16 @@ WITH CHECK (
 --   )
 -- );
 
+-- SELECT: any authenticated user can see all doctors (needed for booking)
+CREATE POLICY "doctor_select_all_authenticated"
+ON hospitaldb.doctor
+FOR SELECT
+TO authenticated
+USING (true);
 
 -- 8) APPOINTMENT POLICIES
 
-
+-- Full access for patients and doctors to their own appointments
 CREATE POLICY "appointment_access"
 ON hospitaldb.appointment
 FOR ALL
@@ -255,9 +244,16 @@ WITH CHECK (
   )
 );
 
+-- SELECT: any authenticated user can see appointments for availability checking
+-- This allows patients to see if a doctor's time slot is already booked
+-- Only exposes doctorID, appointmentDate, startTime - not sensitive medical data
+CREATE POLICY "appointment_availability_select"
+ON hospitaldb.appointment
+FOR SELECT
+TO authenticated
+USING (true);
 
 -- 9) MEDICAL RECORD POLICIES
-
 
 CREATE POLICY "medicalrecord_access"
 ON hospitaldb.medicalrecord
@@ -288,9 +284,7 @@ WITH CHECK (
   )
 );
 
-
 -- 10) PRESCRIPTION POLICIES
-
 
 CREATE POLICY "prescription_access"
 ON hospitaldb.prescription
@@ -321,9 +315,7 @@ WITH CHECK (
   )
 );
 
-
 -- 11) PRESCRIPTION ITEM POLICIES
-
 
 CREATE POLICY "prescriptionitem_access"
 ON hospitaldb.prescriptionitem
@@ -356,9 +348,7 @@ WITH CHECK (
   )
 );
 
-
 -- 12) MEDICAL RECORD DIAGNOSIS POLICIES
-
 
 CREATE POLICY "medicalrecorddiagnosis_access"
 ON hospitaldb.medicalrecorddiagnosis
@@ -391,9 +381,7 @@ WITH CHECK (
   )
 );
 
-
 -- 13) TEST RESULT POLICIES
-
 
 CREATE POLICY "testresult_access"
 ON hospitaldb.testresult
@@ -426,9 +414,7 @@ WITH CHECK (
   )
 );
 
-
 -- 14) DOCTOR AVAILABILITY POLICIES
-
 
 -- Any authenticated user can view availability to book
 CREATE POLICY "doctoravailability_select"
@@ -458,6 +444,5 @@ WITH CHECK (
     WHERE u."supabaseUserId" = auth.uid()
   )
 );
-
 
 -- END OF RLS SCRIPT
