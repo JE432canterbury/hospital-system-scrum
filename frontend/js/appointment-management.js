@@ -92,7 +92,7 @@ function createAppointmentCard(appointment) {
             <div class="appointment-info">
                 <div class="info-item">
                     <strong>Doctor:</strong> 
-                    Dr. ${appointment.doctor?.firstName} ${appointment.doctor?.lastName}
+                    ${appointment.doctor?.firstName && appointment.doctor?.lastName ? `Dr. ${appointment.doctor.firstName} ${appointment.doctor.lastName}` : 'Unknown Doctor'}
                 </div>
                 <div class="info-item">
                     <strong>Date:</strong> ${formatDate(appointment.appointmentDate)}
@@ -327,7 +327,7 @@ async function confirmReschedule() {
             return;
         }
         
-        console.log(' Reschedule time slot is available, proceeding...');
+        console.log('Reschedule time slot is available, proceeding...');
         
         const newDateTime = `${newDate}T${newTime}`;
         const result = await dbHelpers.rescheduleAppointment(selectedAppointment.appointmentID, newDateTime);
