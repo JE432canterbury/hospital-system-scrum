@@ -82,6 +82,27 @@ INSERT INTO hospitaldb.medication ("medication") VALUES
 ON CONFLICT DO NOTHING;
 
 
+-- DOCTOR AVAILABILITY
+-- Populates Mon-Fri 9am availability for all doctors for the next 6 months
+-- The calendar component uses this table to determine which days are bookable
+-- Any date not present here is blocked on the calendar regardless of day of week
+-- If a doctor takes a day off, remove their row for that date to block it
+
+
+INSERT INTO hospitaldb.doctoravailability ("doctorID", "dateAvailable", "timeAvailable")
+SELECT
+    d."doctorID",
+    generate_series::date,
+    '09:00'::time
+FROM hospitaldb.doctor d
+CROSS JOIN generate_series(
+    CURRENT_DATE,
+    CURRENT_DATE + INTERVAL '6 months',
+    '1 day'::interval
+) generate_series
+WHERE EXTRACT(DOW FROM generate_series) BETWEEN 1 AND 5
+ON CONFLICT DO NOTHING;
+
 
 COMMIT;
 
