@@ -140,7 +140,8 @@ export const dbHelpers = {
             .select(`
                 *,
                 appointmentStatus:appointmentstatus(status),
-                appointmentType:appointmenttype(type)
+                appointmentType:appointmenttype(type),
+                doctor:doctor(firstName, lastName)
             `)
             .eq('patientID', patientId)
             .order('appointmentDate', { ascending: true });
