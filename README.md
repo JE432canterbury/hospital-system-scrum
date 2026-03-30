@@ -45,3 +45,9 @@ A patient-focused hospital system developed using Agile Scrum. The application p
 ## Assignment Context
 
 This project was developed over three sprints using Agile Scrum methodology as part of a Software Engineering module. Core features implemented include authentication, appointment booking, doctor availability, and secure medical record access.
+
+## 🎥 Demonstration Video
+
+A full demonstration of the system, including authentication, appointment booking, calendar functionality, and security features, can be accessed here:
+
+https://drive.google.com/file/d/1se76GZVqov-KWXlZEVplKVlliUYLD0yI/view?usp=sharing
